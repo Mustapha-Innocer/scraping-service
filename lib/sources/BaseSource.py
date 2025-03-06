@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from lib.sources.typings import SourceArticle
+from lib.sources.typings import ScrapedData
 
 
 class BaseSource(ABC):
@@ -15,5 +15,5 @@ class BaseSource(ABC):
         pass
 
     @abstractmethod
-    def top_headlines(self) -> list[SourceArticle]:
+    def top_headlines(self) -> list[ScrapedData]:
         pass

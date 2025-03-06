@@ -1,11 +1,11 @@
 from pydantic import BaseModel
 
 
-class SourceArticle(BaseModel):
+class ScrapedData(BaseModel):
     url: str
     title: str
-    category: str
-    text: str
+    body: str
     timestamp: int
     image_url: str
     source: str
+    author: str

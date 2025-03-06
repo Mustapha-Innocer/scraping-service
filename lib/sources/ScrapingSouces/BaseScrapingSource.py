@@ -6,7 +6,7 @@ from requests import Response, get
 
 
 class BaseScrapingSource(BaseSource):
-    def __get(url) -> BeautifulSoup:
+    def _get_html(self, url) -> BeautifulSoup:
 
         res: Response = get(url)
 
@@ -16,35 +16,35 @@ class BaseScrapingSource(BaseSource):
         return BeautifulSoup(res.text, "html.parser")
 
     @abstractmethod
-    def __get_news_tags(self, source_html) -> list[Tag]:
+    def _get_news_tags(self, source_html) -> list[Tag]:
         pass
 
     @abstractmethod
-    def __get_full_story(self, tag: Tag) -> dict:
+    def _get_full_story(self, tag: Tag) -> dict:
         pass
 
     @abstractmethod
-    def __extract_news_details(self, source_html) -> list[Tag]:
+    def _extract_news_details(self, source_html) -> list[Tag]:
         pass
 
     @abstractmethod
-    def __get_title(self, tag: Tag) -> str:
+    def _get_title(self, tag: Tag) -> str:
         pass
 
     @abstractmethod
-    def __get_link(self, tag: Tag) -> str:
+    def _get_link(self, tag: Tag) -> str:
         pass
 
     @abstractmethod
-    def __get_timestamp(self, tag: Tag) -> int:
+    def _get_timestamp(self, tag: Tag) -> int:
         pass
 
-    def __get_image_url(self, tag: Tag) -> str:
+    def _get_image_url(self, tag: Tag) -> str:
         pass
 
-    def __get_text(self, tag: Tag) -> str:
+    def _get_text(self, tag: Tag) -> str:
         pass
 
     @abstractmethod
-    def __get_story_category(self, story: str) -> str:
+    def _get_story_category(self, story: str) -> str:
         pass

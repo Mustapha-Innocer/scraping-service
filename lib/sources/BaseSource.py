@@ -14,5 +14,6 @@ class BaseSource(ABC):
     def base_url(self):
         pass
 
+    @abstractmethod
     def top_headlines(self) -> list[SourceArticle]:
         pass

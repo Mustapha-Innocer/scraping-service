@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
 
-from lib.sources.typings import ScrapedData
-
 
 class BaseSource(ABC):
     @property
@@ -11,9 +9,9 @@ class BaseSource(ABC):
 
     @property
     @abstractmethod
-    def base_url(self):
+    def url(self):
         pass
 
     @abstractmethod
-    def top_headlines(self) -> list[ScrapedData]:
+    async def push_data(self, waitime: int):
         pass

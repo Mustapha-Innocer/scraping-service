@@ -1,11 +1,8 @@
-import logging
 from datetime import datetime
 
 from bs4 import BeautifulSoup, Tag
 
-from lib.sources.ScrapingSouces.BaseScrapingSource import BaseScrapingSource
-
-LOGGER = logging.getLogger(__name__)
+from lib.sources.ScrapingSources.BaseScrapingSource import BaseScrapingSource
 
 
 class CityNews(BaseScrapingSource):

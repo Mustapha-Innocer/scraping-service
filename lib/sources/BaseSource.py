@@ -1,7 +1,12 @@
 from abc import ABC, abstractmethod
 
+from lib.logging.logger import LOGGER
+
 
 class BaseSource(ABC):
+    def __init__(self):
+        LOGGER.info(f"Initializing {self.name} source")
+
     @property
     @abstractmethod
     def name(self):

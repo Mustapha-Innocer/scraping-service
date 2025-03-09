@@ -2,7 +2,9 @@ import json
 from contextlib import contextmanager
 
 from confluent_kafka import Producer
-from config import config
+
+from lib.config import config
+from lib.logging.logger import LOGGER
 
 # Kafka configuration
 config = {
@@ -17,11 +19,11 @@ config = {
 # Callback function for delivery report
 def delivery_report(err, msg):
     if err:
-        print(f"Message delivery failed: {err}")
+        LOGGER.info(f"Data delivery failed: {err}")
     else:
         # TODO: add to cache
         message = json.loads(msg.value())
-        print(f"Message delivered to {msg.topic()} - {message['title']}")
+        LOGGER.info(f"Data delivered to {msg.topic()} - {message['title']}")
 
 
 @contextmanager

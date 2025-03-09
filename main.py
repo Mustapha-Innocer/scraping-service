@@ -1,5 +1,6 @@
 import asyncio
 
+from lib.logging.logger import LOGGER
 from lib.sources.ScrapingSources.CityNews.CityNews import CityNews
 
 
@@ -12,8 +13,5 @@ async def main():
 
 
 if __name__ == "__main__":
-    cn = CityNews()
-    news_sources = [
-        cn,
-    ]
+    LOGGER.info(f"{'*' * 10} Starting Scraping Service {'*' * 10}")
     asyncio.run(main())

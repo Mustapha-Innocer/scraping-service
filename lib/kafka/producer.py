@@ -6,8 +6,6 @@ from confluent_kafka import Producer
 from lib.config.config import KAFKA_PORT, KAFKA_SERVER
 from lib.decorators.decorator import add_to_cache
 from lib.logging.logger import LOGGER
-from lib.redis.redis import redis_client
-from lib.util.util import hash_string
 
 # Kafka configuration
 config = {
@@ -26,7 +24,6 @@ def delivery_report(err, msg):
         LOGGER.info(f"Data delivery failed: {err}")
     else:
         message = json.loads(msg.value())
-        redis_client.setex(hash_string(message["url"]), 600, message["title"])
         LOGGER.info(f"Data delivered to {msg.topic()} - {message['title']}")
 
 

@@ -1,4 +1,5 @@
 import functools
+import json
 
 from lib.logging.logger import LOGGER
 from lib.redis.redis import redis_client
@@ -22,7 +23,12 @@ def check_cache(func):
 
 def add_to_cache(func):
     def wrapper(*args, **kwargs):
-        LOGGER.info("Cache updated")
+        LOGGER.info("Adding new item to the cache")
+        err = args[0]
+        if err:
+            return func(*args, **kwargs)
+        message = json.loads(args[1].value())
+        redis_client.setex(hash_string(message["url"]), 600, message["title"])
         return func(*args, **kwargs)
 
     return wrapper

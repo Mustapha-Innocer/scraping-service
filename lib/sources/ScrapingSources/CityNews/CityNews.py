@@ -4,6 +4,7 @@ from lib.logging.logger import LOGGER
 from bs4 import BeautifulSoup, Tag
 
 from lib.sources.ScrapingSources.BaseScrapingSource import BaseScrapingSource
+from lib.decorators.decorator import check_cache
 
 
 class CityNews(BaseScrapingSource):
@@ -21,6 +22,7 @@ class CityNews(BaseScrapingSource):
         return self.__url
 
     # TODO: Adding a caching decorator
+    @check_cache
     def _get_news_tags(self, source_html: BeautifulSoup) -> set[Tag]:
         LOGGER.debug("Extracting news tags")
         news_tags: list[Tag] = source_html.find_all(

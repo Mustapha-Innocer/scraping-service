@@ -9,7 +9,7 @@ async def main():
     news_sources = [
         cn,
     ]
-    await asyncio.gather(*[source.push_data() for source in news_sources])
+    await asyncio.gather(*[source.push_data(60) for source in news_sources])
 
 
 if __name__ == "__main__":

@@ -4,7 +4,6 @@ from asyncio import gather, sleep
 
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup, Tag
-from requests import Response, get
 
 from lib.kafka.producer import delivery_report, kafka_producer
 from lib.logging.logger import LOGGER
@@ -40,14 +39,15 @@ class BaseScrapingSource(BaseSource):
     def _get_author(self, story_html: BeautifulSoup) -> str:
         pass
 
-    def _get_html(self, url: str) -> BeautifulSoup:
+    async def _get_html(self, url: str) -> BeautifulSoup:
 
-        res: Response = get(url)
-
-        if res.status_code != 200:
-            res.raise_for_status()
-
-        return BeautifulSoup(res.text, "html.parser")
+        async with ClientSession() as session:
+            async with session.get(url) as res:
+                if res.status != 200:
+                    LOGGER.error(f"Unaccessible URL: {url}")
+                    return
+                text = await res.text()
+        return BeautifulSoup(text, "html.parser")
 
     async def _process(self, tag: Tag, session: ClientSession) -> None:
         url = tag.a["href"]
@@ -87,7 +87,7 @@ class BaseScrapingSource(BaseSource):
         while True:
             LOGGER.info(f"Scraping data from {self.name}")
             LOGGER.debug(f"Geeting stories HTML from {self.url}")
-            source_html: BeautifulSoup = self._get_html(self.url)
+            source_html: BeautifulSoup = await self._get_html(self.url)
             news_tags = self._get_news_tags(source_html)
             LOGGER.info(f"Found {len(news_tags)} news stories")
             async with ClientSession() as session:

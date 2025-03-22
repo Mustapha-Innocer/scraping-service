@@ -15,8 +15,8 @@ from lib.util.util import hash_string
 
 
 class BaseScrapingSource(BaseSource):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, wait_time):
+        super().__init__(wait_time)
 
     @abstractmethod
     def _get_news_tags(self, source_html: BeautifulSoup) -> set[Tag]:
@@ -90,7 +90,7 @@ class BaseScrapingSource(BaseSource):
             except Exception as e:
                 LOGGER.error(f"Unable to cache {url} \n{str(e)}")
 
-    async def push_data(self, waitime: int = 3600):
+    async def push_data(self):
         while True:
             LOGGER.info(f"Scraping data from {self.name}")
             LOGGER.debug(f"Geting stories HTML from {self.url}")
@@ -99,4 +99,4 @@ class BaseScrapingSource(BaseSource):
                 news_tags = self._get_news_tags(source_html)
                 LOGGER.info(f"Found {len(news_tags)} news stories")
                 await gather(*[self._process(tag) for tag in news_tags])
-            await sleep(waitime)
+            await sleep(self.wait_time)

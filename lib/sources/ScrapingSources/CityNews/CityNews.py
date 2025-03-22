@@ -1,17 +1,17 @@
 from datetime import datetime
-from lib.logging.logger import LOGGER
 
 from bs4 import BeautifulSoup, Tag
 
-from lib.sources.ScrapingSources.BaseScrapingSource import BaseScrapingSource
 from lib.decorators.decorator import check_cache
+from lib.logging.logger import LOGGER
+from lib.sources.ScrapingSources.BaseScrapingSource import BaseScrapingSource
 
 
 class CityNews(BaseScrapingSource):
-    def __init__(self):
+    def __init__(self, wait_time: int | None = None):
         self.__name = "city news gh"
         self.__url = "https://citinewsroom.com/news/"
-        super().__init__()
+        super().__init__(wait_time)
 
     @property
     def name(self):

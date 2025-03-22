@@ -3,19 +3,17 @@ import asyncio
 from lib.logging.logger import LOGGER
 from lib.sources.ScrapingSources.CityNews.CityNews import CityNews
 from lib.sources.ScrapingSources.TechCrunch.TechCrunch import TechCrunch
-from lib.sources.ScrapingSources.Yahoo.Yahoo import Yahoo
+# from lib.sources.ScrapingSources.Yahoo.Yahoo import Yahoo
 
 
 async def main():
     cn = CityNews()
-    yh = Yahoo()
     tc = TechCrunch()
     news_sources = [
-        # cn,
-        # yh,
+        cn,
         tc,
     ]
-    await asyncio.gather(*[source.push_data(60) for source in news_sources])
+    await asyncio.gather(*[source.push_data() for source in news_sources])
 
 
 if __name__ == "__main__":

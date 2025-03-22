@@ -9,10 +9,10 @@ from lib.sources.ScrapingSources.BaseScrapingSource import BaseScrapingSource
 
 
 class TechCrunch(BaseScrapingSource):
-    def __init__(self):
+    def __init__(self, wait_time: int | None = None):
         self.__name = "tech crunch"
         self.__url = "https://techcrunch.com/latest/"
-        super().__init__()
+        super().__init__(wait_time)
 
     @property
     def name(self):

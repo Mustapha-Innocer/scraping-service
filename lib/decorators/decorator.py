@@ -7,7 +7,6 @@ from lib.util.util import hash_string
 
 
 def check_cache(func):
-
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         res = func(*args, **kwargs)
@@ -22,6 +21,7 @@ def check_cache(func):
 
 
 def add_to_cache(func):
+    @functools.wraps(func)
     def wrapper(*args, **kwargs):
         LOGGER.info("Adding new item to the cache")
         err = args[0]

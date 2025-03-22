@@ -5,10 +5,13 @@ from asyncio import gather, sleep
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup, Tag
 
+from lib.config.config import TTL_ERRORED_TAG
 from lib.kafka.producer import delivery_report, kafka_producer
 from lib.logging.logger import LOGGER
 from lib.sources.BaseSource import BaseSource
 from lib.sources.typings import ScrapedData
+from lib.redis.redis import redis_client
+from lib.util.util import hash_string
 
 
 class BaseScrapingSource(BaseSource):
@@ -51,8 +54,8 @@ class BaseScrapingSource(BaseSource):
         return BeautifulSoup(text, "html.parser")
 
     async def _process(self, tag: Tag) -> None:
+        url = tag.a["href"]
         try:
-            url = tag.a["href"]
             LOGGER.debug(f"Getting full story HTML from {url}")
             story_html = await self._get_html(url)
             LOGGER.info(f"Processing {tag.a.text}")
@@ -79,8 +82,11 @@ class BaseScrapingSource(BaseSource):
                     callback=delivery_report,
                 )
         except Exception as e:
-            
-            LOGGER.error(str(e))
+            LOGGER.error(f"Unable to process {str(e)}")
+            try:
+                redis_client.setex(hash_string(url), TTL_ERRORED_TAG, "")
+            except Exception as e:
+                LOGGER.error(f"Unable to cache {url} \n{str(e)}")
 
     async def push_data(self, waitime: int = 3600):
         while True:

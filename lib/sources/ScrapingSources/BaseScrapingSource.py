@@ -42,23 +42,19 @@ class BaseScrapingSource(BaseSource):
     async def _get_html(self, url: str) -> BeautifulSoup:
 
         async with ClientSession() as session:
-            async with session.get(url) as res:
+            headers = {"user-agent": "Mozilla/5.0 ..."}
+            async with session.get(url, headers=headers) as res:
                 if res.status != 200:
                     LOGGER.error(f"Unaccessible URL: {url}")
                     return
                 text = await res.text()
         return BeautifulSoup(text, "html.parser")
 
-    async def _process(self, tag: Tag, session: ClientSession) -> None:
-        url = tag.a["href"]
-        LOGGER.debug(f"Getting full story HTML from {url}")
-        async with session.get(url) as response:
-            if response.status != 200:
-                LOGGER.error(f"Failed to get story HTML from {url}")
-                return
-
-            text = await response.text()
-            story_html = BeautifulSoup(text, "html.parser")
+    async def _process(self, tag: Tag) -> None:
+        try:
+            url = tag.a["href"]
+            LOGGER.debug(f"Getting full story HTML from {url}")
+            story_html = await self._get_html(url)
             LOGGER.info(f"Processing {tag.a.text}")
             title = self._get_title(story_html)
             timestamp = self._get_timestamp(story_html)
@@ -82,16 +78,17 @@ class BaseScrapingSource(BaseSource):
                     value=json.dumps(data.__dict__),
                     callback=delivery_report,
                 )
+        except Exception as e:
+            
+            LOGGER.error(str(e))
 
     async def push_data(self, waitime: int = 3600):
         while True:
             LOGGER.info(f"Scraping data from {self.name}")
-            LOGGER.debug(f"Geeting stories HTML from {self.url}")
+            LOGGER.debug(f"Geting stories HTML from {self.url}")
             source_html: BeautifulSoup = await self._get_html(self.url)
-            news_tags = self._get_news_tags(source_html)
-            LOGGER.info(f"Found {len(news_tags)} news stories")
-            async with ClientSession() as session:
-                await gather(
-                    *[self._process(tag, session) for tag in news_tags]
-                )
+            if source_html is not None:
+                news_tags = self._get_news_tags(source_html)
+                LOGGER.info(f"Found {len(news_tags)} news stories")
+                await gather(*[self._process(tag) for tag in news_tags])
             await sleep(waitime)

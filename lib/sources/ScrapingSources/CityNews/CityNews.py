@@ -21,17 +21,13 @@ class CityNews(BaseScrapingSource):
     def url(self):
         return self.__url
 
-    # TODO: Adding a caching decorator
     @check_cache
     def _get_news_tags(self, source_html: BeautifulSoup) -> set[Tag]:
         LOGGER.debug("Extracting news tags")
         news_tags: list[Tag] = source_html.find_all(
             "h3", class_="jeg_post_title"
         )
-
-        # TODO: handle empty news_tags
-
-        return set(news_tags[:10])
+        return set(news_tags)
 
     def _get_title(self, story_html: BeautifulSoup) -> str:
         LOGGER.info("Extracting story title")

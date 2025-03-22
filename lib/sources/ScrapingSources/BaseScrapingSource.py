@@ -8,9 +8,9 @@ from bs4 import BeautifulSoup, Tag
 from lib.config.config import TTL_ERRORED_TAG
 from lib.kafka.producer import delivery_report, kafka_producer
 from lib.logging.logger import LOGGER
+from lib.redis.redis import redis_client
 from lib.sources.BaseSource import BaseSource
 from lib.sources.typings import ScrapedData
-from lib.redis.redis import redis_client
 from lib.util.util import hash_string
 
 
@@ -84,7 +84,9 @@ class BaseScrapingSource(BaseSource):
         except Exception as e:
             LOGGER.error(f"Unable to process {str(e)}")
             try:
-                redis_client.setex(hash_string(url), TTL_ERRORED_TAG, "")
+                redis_client.setex(
+                    hash_string(url), TTL_ERRORED_TAG, tag.a.text
+                )
             except Exception as e:
                 LOGGER.error(f"Unable to cache {url} \n{str(e)}")
 

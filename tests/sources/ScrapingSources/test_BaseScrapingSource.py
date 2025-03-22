@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock
 
-import aiohttp
 import pytest
 from aioresponses import aioresponses
 
@@ -9,7 +8,6 @@ from lib.sources.ScrapingSources.BaseScrapingSource import BaseScrapingSource
 
 @pytest.mark.asyncio
 async def test_process(mocker, tag):
-    print(tag)
     url = "https://example.com"
     data = ""
 
@@ -28,7 +26,5 @@ async def test_process(mocker, tag):
 
     with aioresponses() as mock_session:
         mock_session.get(url, payload=data)
-
-        async with aiohttp.ClientSession() as session:
-            await BaseScrapingSource._process(c, tag, session)
-            kafka_producer.assert_called
+        await BaseScrapingSource._process(c, tag)
+        kafka_producer.assert_called

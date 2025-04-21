@@ -30,7 +30,7 @@ This microservice scrapes news stories from various internet sources, checks for
 
 ### 1. Clone the repo
 ```bash
-git clone https://github.com/your-username/scraping-service.git
+git clone https://github.com/Mustapha-Innocer/scraping-service.git
 cd scraping-service
 ```
 

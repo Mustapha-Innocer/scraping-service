@@ -8,10 +8,10 @@ from lib.logging.logger import LOGGER
 from lib.sources.ScrapingSources.BaseScrapingSource import BaseScrapingSource
 
 
-class CityNews(BaseScrapingSource):
+class TechCrunch(BaseScrapingSource):
     def __init__(self, wait_time: int | None = None):
-        self.__name = "city news gh"
-        self.__url = "https://citinewsroom.com/news/"
+        self.__name = "tech crunch"
+        self.__url = "https://techcrunch.com/latest/"
         super().__init__(wait_time)
 
     @property
@@ -27,7 +27,7 @@ class CityNews(BaseScrapingSource):
         LOGGER.debug("Extracting news tags")
         try:
             news_tags: list[Tag] = source_html.find_all(
-                "h3", class_="jeg_post_title"
+                "h3", class_="loop-card__title"
             )
             return set(news_tags)
         except Exception as e:
@@ -36,7 +36,9 @@ class CityNews(BaseScrapingSource):
     def _get_title(self, story_html: BeautifulSoup) -> str:
         LOGGER.info("Extracting story title")
         try:
-            title: str = story_html.find("h1", class_="jeg_post_title").text
+            title: str = story_html.find(
+                "h1", class_="article-hero__title wp-block-post-title"
+            ).text
             return title
         except Exception as e:
             raise Notfound(f"Unable to extract story title: {str(e)}")
@@ -44,13 +46,10 @@ class CityNews(BaseScrapingSource):
     def _get_timestamp(self, story_html: BeautifulSoup) -> int:
         LOGGER.info("Extracting story timestamp")
         try:
-            date_str: str = (
-                story_html.find("div", class_="meta_left")
-                .find("div", class_="jeg_meta_date")
-                .find("a")
-                .text
-            )
-            date = datetime.strptime(date_str, "%B %d, %Y")
+            date_str: str = story_html.find(
+                "div", class_="article-hero__date"
+            ).find("time")["datetime"]
+            date = datetime.fromisoformat(date_str)
             return int(date.timestamp())
         except Exception as e:
             raise Notfound(f"Unable to extract story timestamp: {str(e)}")
@@ -59,7 +58,7 @@ class CityNews(BaseScrapingSource):
         LOGGER.info("Extracting story image url")
         try:
             img_url: str = story_html.find(
-                "div", class_="jeg_featured featured_image"
+                "div", class_="article-hero__first-section"
             ).find("img")["src"]
             return img_url
         except Exception as e:
@@ -68,7 +67,10 @@ class CityNews(BaseScrapingSource):
     def _get_text(self, story_html: BeautifulSoup) -> str:
         LOGGER.info("Extracting story body")
         try:
-            text: str = story_html.find("div", class_="content-inner").text
+            text: str = story_html.find(
+                "div",
+                class_="wp-block-post-content-is-layout-constrained",
+            ).text
             return text
         except Exception as e:
             raise Notfound(f"Unable to extract story content: {str(e)}")
@@ -76,12 +78,7 @@ class CityNews(BaseScrapingSource):
     def _get_author(self, story_html: BeautifulSoup) -> str:
         LOGGER.info("Extracting story author")
         try:
-            tag: Tag = story_html.select_one(
-                "div.meta_left > div.jeg_meta_author.coauthor"
-            )
-            if tag and tag.find("a"):
-                return tag.find("a").text
-            LOGGER.info("Author name not found")
-            return "unknown"
+            tag: Tag = story_html.select_one("div.article-hero__authors")
+            return tag.find("a").text
         except Exception as e:
             raise Notfound(f"Unable to extract story author: {str(e)}")

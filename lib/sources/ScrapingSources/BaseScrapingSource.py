@@ -4,17 +4,19 @@ from asyncio import gather, sleep
 
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup, Tag
-from requests import Response, get
 
+from lib.config.config import TTL_ERRORED_TAG
 from lib.kafka.producer import delivery_report, kafka_producer
 from lib.logging.logger import LOGGER
+from lib.redis.redis import redis_client
 from lib.sources.BaseSource import BaseSource
 from lib.sources.typings import ScrapedData
+from lib.util.util import hash_string
 
 
 class BaseScrapingSource(BaseSource):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, wait_time):
+        super().__init__(wait_time)
 
     @abstractmethod
     def _get_news_tags(self, source_html: BeautifulSoup) -> set[Tag]:
@@ -40,25 +42,22 @@ class BaseScrapingSource(BaseSource):
     def _get_author(self, story_html: BeautifulSoup) -> str:
         pass
 
-    def _get_html(self, url: str) -> BeautifulSoup:
+    async def _get_html(self, url: str) -> BeautifulSoup:
 
-        res: Response = get(url)
+        async with ClientSession() as session:
+            headers = {"user-agent": "Mozilla/5.0 ..."}
+            async with session.get(url, headers=headers) as res:
+                if res.status != 200:
+                    LOGGER.error(f"Unaccessible URL: {url}")
+                    return
+                text = await res.text()
+        return BeautifulSoup(text, "html.parser")
 
-        if res.status_code != 200:
-            res.raise_for_status()
-
-        return BeautifulSoup(res.text, "html.parser")
-
-    async def _process(self, tag: Tag, session: ClientSession) -> None:
+    async def _process(self, tag: Tag) -> None:
         url = tag.a["href"]
-        LOGGER.debug(f"Getting full story HTML from {url}")
-        async with session.get(url) as response:
-            if response.status != 200:
-                LOGGER.error(f"Failed to get story HTML from {url}")
-                return
-
-            text = await response.text()
-            story_html = BeautifulSoup(text, "html.parser")
+        try:
+            LOGGER.debug(f"Getting full story HTML from {url}")
+            story_html = await self._get_html(url)
             LOGGER.info(f"Processing {tag.a.text}")
             title = self._get_title(story_html)
             timestamp = self._get_timestamp(story_html)
@@ -82,16 +81,22 @@ class BaseScrapingSource(BaseSource):
                     value=json.dumps(data.__dict__),
                     callback=delivery_report,
                 )
+        except Exception as e:
+            LOGGER.error(f"Unable to process {str(e)}")
+            try:
+                redis_client.setex(
+                    hash_string(url), TTL_ERRORED_TAG, tag.a.text
+                )
+            except Exception as e:
+                LOGGER.error(f"Unable to cache {url} \n{str(e)}")
 
-    async def push_data(self, waitime: int = 3600):
+    async def push_data(self):
         while True:
             LOGGER.info(f"Scraping data from {self.name}")
-            LOGGER.debug(f"Geeting stories HTML from {self.url}")
-            source_html: BeautifulSoup = self._get_html(self.url)
-            news_tags = self._get_news_tags(source_html)
-            LOGGER.info(f"Found {len(news_tags)} news stories")
-            async with ClientSession() as session:
-                await gather(
-                    *[self._process(tag, session) for tag in news_tags]
-                )
-            await sleep(waitime)
+            LOGGER.debug(f"Geting stories HTML from {self.url}")
+            source_html: BeautifulSoup = await self._get_html(self.url)
+            if source_html is not None:
+                news_tags = self._get_news_tags(source_html)
+                LOGGER.info(f"Found {len(news_tags)} news stories")
+                await gather(*[self._process(tag) for tag in news_tags])
+            await sleep(self.wait_time)

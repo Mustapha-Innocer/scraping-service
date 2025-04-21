@@ -10,5 +10,5 @@ KAFKA_PORT = os.getenv("KAFKA_PORT")
 REDIS_SERVER = os.getenv("REDIS_SERVER")
 REDIS_PORT = os.getenv("REDIS_PORT")
 
-TTL_NEW_TAG = os.getenv("TTL_NEW_TAG")
-TTL_ERRORED_TAG = os.getenv("TTL_ERRORED_TAG")
+TTL_NEW_TAG: int = int(os.getenv("TTL_NEW_TAG"))
+TTL_ERRORED_TAG: int = int(os.getenv("TTL_ERRORED_TAG"))

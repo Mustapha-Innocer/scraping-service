@@ -1,6 +1,7 @@
 import json
 from abc import abstractmethod
 from asyncio import gather, sleep
+import traceback
 
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup, Tag
@@ -10,13 +11,22 @@ from lib.kafka.producer import delivery_report, kafka_producer
 from lib.logging.logger import LOGGER
 from lib.redis.redis import redis_client
 from lib.sources.BaseSource import BaseSource
-from lib.sources.typings import ScrapedData
 from lib.util.util import hash_string
 
 
 class BaseScrapingSource(BaseSource):
     def __init__(self, wait_time):
         super().__init__(wait_time)
+
+    @property
+    @abstractmethod
+    def country(self):
+        pass
+
+    @property
+    @abstractmethod
+    def country_code(self):
+        pass
 
     @abstractmethod
     def _get_news_tags(self, source_html: BeautifulSoup) -> set[Tag]:
@@ -65,24 +75,29 @@ class BaseScrapingSource(BaseSource):
             text = self._get_text(story_html)
             author = self._get_author(story_html)
 
-            data = ScrapedData(
-                url=url,
-                title=title,
-                body=text,
-                timestamp=timestamp,
-                image_url=image_url,
-                source=self.name,
-                author=author,
-            )
+            data = {
+                "url": url,
+                "title": title,
+                "body": text,
+                "published_at": timestamp,
+                "image_url": image_url,
+                "source": {
+                    "name": self.name,
+                    "country": self.country,
+                    "country_code": self.country_code,
+                },
+                "author": author,
+            }
 
             with kafka_producer() as producer:
                 producer.produce(
                     topic="news-data",
-                    value=json.dumps(data.__dict__),
+                    value=json.dumps(data),
                     callback=delivery_report,
                 )
         except Exception as e:
             LOGGER.error(f"Unable to process {str(e)}")
+            traceback.print_exc()
             try:
                 redis_client.setex(
                     hash_string(url), TTL_ERRORED_TAG, tag.a.text

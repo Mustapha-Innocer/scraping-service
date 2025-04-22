@@ -34,7 +34,7 @@ git clone https://github.com/Mustapha-Innocer/scraping-service.git
 cd scraping-service
 ```
 
-### 2. Create `.env` file and provide value for each missing variable
+### 2. Create `.env` file with the appropriate values
 ```ini
 # Kakfa
 KAFKA_SERVER=
@@ -62,27 +62,6 @@ pip install -r requirements.txt
 ```bash
 python main.py
 ```
-
----
-
-
-## 🧠 Environment Variables
-
-| Variable          | Description                   | Example       |
-|------------------|-------------------------------|---------------|
-| `KAFKA_SERVER`   | Kafka host                     | `localhost`   |
-| `KAFKA_PORT`     | Kafka port                     | `9094`        |
-| `REDIS_SERVER`   | Redis host                     | `localhost`   |
-| `REDIS_PORT`     | Redis port                     | `6379`        |
-| `TTL_NEW_TAG`    | Time to live for new story tags         | `864000`      |
-| `TTL_ERRORED_TAG`| Time to live for errored story tags     | `432000`      |
-
----
-
-## 📬 Kafka Topic
-
-- The service publishes stories to a Kafka topic "**news-data**".
-- Downstream services like LLM consumers can subscribe to this topic.
 
 ---
 

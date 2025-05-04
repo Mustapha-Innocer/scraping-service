@@ -10,8 +10,10 @@ from lib.sources.ScrapingSources.BaseScrapingSource import BaseScrapingSource
 
 class TechCrunch(BaseScrapingSource):
     def __init__(self, wait_time: int | None = None):
-        self.__name = "tech crunch"
+        self.__name = "Tech Crunch"
         self.__url = "https://techcrunch.com/latest/"
+        self.__country = "United States"
+        self.__country_code = "US"
         super().__init__(wait_time)
 
     @property
@@ -21,6 +23,14 @@ class TechCrunch(BaseScrapingSource):
     @property
     def url(self):
         return self.__url
+
+    @property
+    def country(self):
+        return self.__country
+
+    @property
+    def country_code(self):
+        return self.__country_code
 
     @check_cache
     def _get_news_tags(self, source_html: BeautifulSoup) -> set[Tag]:

@@ -37,12 +37,13 @@ cd scraping-service
 ### 2. Create `.env` file with the appropriate values
 ```ini
 # Kakfa
-KAFKA_SERVER=
-KAFKA_PORT=
+KAFKA_SERVER=localhost
+KAFKA_PORT=9094
+KAFKA_PRODUCER_TOPIC=news-data
 
 # Redis
-REDIS_SERVER=
-REDIS_PORT=
+REDIS_SERVER=localhost
+REDIS_PORT=6379
 
 # Caching
 TTL_NEW_TAG=864000

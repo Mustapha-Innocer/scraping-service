@@ -6,7 +6,7 @@ import traceback
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup, Tag
 
-from lib.config.config import TTL_ERRORED_TAG
+from lib.config.config import TTL_ERRORED_TAG, KAFKA_PRODUCER_TOPIC
 from lib.kafka.producer import delivery_report, kafka_producer
 from lib.logging.logger import LOGGER
 from lib.redis.redis import redis_client
@@ -91,7 +91,7 @@ class BaseScrapingSource(BaseSource):
 
             with kafka_producer() as producer:
                 producer.produce(
-                    topic="news-data",
+                    topic=KAFKA_PRODUCER_TOPIC,
                     value=json.dumps(data),
                     callback=delivery_report,
                 )

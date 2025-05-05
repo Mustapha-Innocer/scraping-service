@@ -9,13 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      KAFKA_SERVER: ${{vars.KAFKA_SERVER}}
-      KAFKA_PORT: ${{vars.KAFKA_PORT}}
-      REDIS_SERVER: ${{vars.REDIS_SERVER}}
-      REDIS_PORT: ${{vars.REDIS_PORT}}
-      TTL_NEW_TAG: ${{vars.TTL_NEW_TAG}}
-      TTL_ERRORED_TAG: ${{vars.TTL_ERRORED_TAG}}
     strategy:
       fail-fast: false
       matrix:
